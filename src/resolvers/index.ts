@@ -16,6 +16,11 @@ export default {
     obtenerClientes: cliente.obtenerClientes,
     obtenerClientesVendedor: cliente.obtenerClientesVendedor,
     obtenerCliente: cliente.obtenerCliente,
+    // Pedidos
+    obtenerPedidos: pedido.obtenerPedidos,
+    obtenerPedidosVendedor: pedido.obtenerPedidosVendedor,
+    obtenerPedido: pedido.obtenerPedido,
+    obtenerPedidosEstado: pedido.obtenerPedidosEstado,
   },
   Mutation: {
     // Usuarios
@@ -31,5 +36,7 @@ export default {
     eliminarCliente: cliente.eliminarCliente,
     // Pedidos
     nuevoPedido: pedido.nuevoPedido,
+    actualizarPedido: pedido.actualizarPedido,
+    eliminarPedido: pedido.eliminarPedido,
   },
 };

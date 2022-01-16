@@ -4,10 +4,12 @@ type Usuario {
   id: Int!
   createdAt: DateTime
   updatedAt: DateTime
+
   nombre: String
   apellido: String
   email: String
   password: String
+
   clientes: [Cliente]
 }
 
@@ -26,9 +28,12 @@ type Producto {
   id: Int!
   createdAt: DateTime
   updatedAt: DateTime
+
   nombre: String!
   existencia: Int
   precio: Float!
+
+  productoAPedir: [ProductoAPedir]
 }
 
 type Cliente {
@@ -47,18 +52,22 @@ type Pedido {
   id: Int!
   createdAt: DateTime
   updatedAt: DateTime
+
   nombre: String
-  articulos: [ProductoAPedir]
   total: Float
   estado: Estado
+
   cliente: Cliente
   vendedor: Usuario
+
+  articulos: [ProductoAPedir]
 }
 
 type ProductoAPedir {
   id: Int!
   cantidad: Int
-  pedidos: [Pedido]
+  pedido: Pedido
+  producto: Producto
 }
 
 type Query {
@@ -71,6 +80,13 @@ type Query {
   obtenerClientes: [Cliente]
   obtenerClientesVendedor: [Cliente]
   obtenerCliente(id: Int!): Cliente
+  # Pedidos
+  obtenerPedidos: [Pedido]
+  obtenerPedidosVendedor: [Pedido]
+  obtenerPedido(id: Int!): Pedido
+  obtenerPedidosEstado(estado: Estado!): [Pedido]
+  # Busquedas Avanzadas
+  mejoresClientes: [TopCliente]
 }
 
 type Mutation {
@@ -87,6 +103,8 @@ type Mutation {
   eliminarCliente(id: Int!): String
   # Pedidos
   nuevoPedido(data: PedidoInput!): Pedido
+  actualizarPedido(id: Int!, data: PedidoInput!): Pedido
+  eliminarPedido(id: Int!): String
 }
 
 input UsuarioWhereInput {
@@ -120,15 +138,19 @@ input ClienteInput {
 }
 
 input ProductoAPedirInput {
-  id: Int!
+  id: Int
   cantidad: Int
+  pedidoId: Int
+  productoId: Int
 }
 
 input PedidoInput {
   nombre: String
-  articulos: [ProductoAPedirInput]
-  total: Float!
+  total: Float
+  estado: Estado
+
   clienteId: Int
+  articulos: [ProductoAPedirInput]
 }
 
 enum Estado {

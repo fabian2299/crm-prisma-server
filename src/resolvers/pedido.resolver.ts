@@ -1,5 +1,58 @@
+import { Estado } from "@prisma/client";
 import { ResolverContext } from "./usuario.resolver";
-import { Pedido } from "@prisma/client";
+
+// QUERYS
+export async function obtenerPedidos(
+  parent: unknown,
+  args: unknown,
+  { orm, user }: ResolverContext
+) {
+  const pedidos = await orm.pedido.findMany({ include: { articulos: true } });
+  return pedidos;
+}
+
+export async function obtenerPedidosVendedor(
+  parent: unknown,
+  args: unknown,
+  { orm, user }: ResolverContext
+) {
+  const pedidos = await orm.pedido.findMany({
+    where: { vendedorId: user.id },
+    include: { articulos: true },
+  });
+  return pedidos;
+}
+
+export async function obtenerPedido(
+  parent: unknown,
+  args: { id: number },
+  { orm, user }: ResolverContext
+) {
+  const { id } = args;
+
+  const pedido = await orm.pedido.findUnique({
+    where: { id },
+    include: { articulos: true },
+  });
+
+  if (pedido?.vendedorId !== user.id) {
+    throw new Error(`No tienes las crendeciales`);
+  }
+
+  return pedido;
+}
+
+export async function obtenerPedidosEstado(
+  parent: unknown,
+  args: { estado: Estado },
+  { orm, user }: ResolverContext
+) {
+  const { estado } = args;
+  const pedido = await orm.pedido.findMany({
+    where: { estado, vendedorId: user.id },
+  });
+  return pedido;
+}
 
 // MUTATIONS
 export async function nuevoPedido(
@@ -18,12 +71,25 @@ export async function nuevoPedido(
   }
   // revisar que el stock este disponible
   for await (const articulo of articulos) {
-    const { id } = articulo;
-    const producto = await orm.producto.findUnique({ where: { id } });
+    const { productoId } = articulo;
+    // busca el producto
+    let producto = await orm.producto.findUnique({
+      where: { id: productoId },
+    });
+    if (!producto) throw new Error(`Producto no encontrado`);
+    // revisar si la cantidad no sobrepasa el stock
     if (articulo.cantidad > producto?.existencia!) {
       throw new Error(
         `El articulo: ${producto?.nombre}, excede la cantidad disponible`
       );
+    } else {
+      // Restar la cantidad a lo disponible
+      producto = await orm.producto.update({
+        where: { id: productoId },
+        data: {
+          existencia: producto.existencia - articulo.cantidad,
+        },
+      });
     }
   }
 
@@ -45,4 +111,93 @@ export async function nuevoPedido(
   });
 
   return pedido;
+}
+
+export async function actualizarPedido(
+  parent: unknown,
+  { id, data }: { id: number; data: any },
+  { orm, user }: ResolverContext
+) {
+  const { clienteId, articulos, estado } = data;
+
+  // verificar si el pedido existe
+  let pedido = await orm.pedido.findFirst({ where: { id } });
+  if (!pedido) throw new Error(`El pedido no existe`);
+
+  // verificar si el cliente existe
+  const cliente = await orm.cliente.findFirst({ where: { id: clienteId } });
+  if (!cliente) throw new Error(`El cliente no existe`);
+
+  // verificar si el cliente y pedido pertenece al vendedor
+  if (cliente.vendedorId !== user.id) {
+    throw new Error(`No tienes las crendeciales`);
+  }
+
+  // revisar el stock
+  for await (const articulo of articulos) {
+    const { productoId } = articulo;
+
+    // busca el producto
+    let producto = await orm.producto.findUnique({
+      where: { id: productoId },
+    });
+    if (!producto) throw new Error(`Producto no encontrado`);
+    // revisar si la cantidad no sobrepasa el stock
+    if (articulo.cantidad > producto?.existencia!) {
+      throw new Error(
+        `El articulo: ${producto?.nombre}, excede la cantidad disponible`
+      );
+    } else {
+      // Restar la cantidad a lo disponible
+      producto = await orm.producto.update({
+        where: { id: productoId },
+        data: {
+          existencia: producto.existencia - articulo.cantidad,
+        },
+      });
+    }
+    pedido = await orm.pedido.update({
+      where: { id },
+      data: {
+        estado,
+        articulos: {
+          update: [
+            {
+              data: { cantidad: articulo.cantidad },
+              where: { id: articulo.id },
+            },
+          ],
+        },
+      },
+    });
+
+    return pedido;
+  }
+}
+
+export async function eliminarPedido(
+  parent: unknown,
+  { id }: { id: number },
+  { orm, user }: ResolverContext
+) {
+  // verificar si el pedido existe
+  let pedido = await orm.pedido.findFirst({ where: { id } });
+  if (!pedido) throw new Error(`El pedido no existe`);
+  // verificar si el pedido es del vendedor
+  if (pedido.vendedorId !== user.id) {
+    throw new Error(`No tienes las crendeciales`);
+  }
+
+  pedido = await orm.pedido.update({
+    where: { id },
+    data: {
+      articulos: {
+        deleteMany: {},
+      },
+    },
+  });
+
+  pedido = await orm.pedido.delete({ where: { id } });
+
+  return `Pedido con nombre ${pedido.nombre} ha sido eliminado`;
 }

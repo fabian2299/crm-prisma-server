@@ -25,6 +25,7 @@ export default {
     // BusquedaAvanzada
     mejoresClientes: busquedaAvanzada.mejoresClientes,
     mejoresVendedores: busquedaAvanzada.mejoresVendedores,
+    buscarProducto: busquedaAvanzada.buscarProducto,
   },
   Mutation: {
     // Usuarios

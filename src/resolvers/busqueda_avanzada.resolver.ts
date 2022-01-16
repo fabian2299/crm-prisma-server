@@ -36,7 +36,23 @@ export async function mejoresVendedores(
     },
   });
 
-  console.log(bestSellers);
-
   return bestSellers;
+}
+
+export async function buscarProducto(
+  parent: unknown,
+  args: { texto: string },
+  { orm, user }: ResolverContext
+) {
+  const { texto } = args;
+
+  const productos = await orm.producto.findMany({
+    where: {
+      nombre: {
+        contains: texto,
+      },
+    },
+  });
+
+  return productos;
 }

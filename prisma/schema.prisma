@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 datasource db {
@@ -48,6 +49,8 @@ model Producto {
   precio              Float
 
   productoAPedir      ProductoAPedir[]
+
+  @@fulltext([nombre])
 }
 
 model Pedido {

@@ -1,0 +1,138 @@
+scalar DateTime
+
+type Usuario {
+  id: Int!
+  createdAt: DateTime
+  updatedAt: DateTime
+  nombre: String
+  apellido: String
+  email: String
+  password: String
+  clientes: [Cliente]
+}
+
+type Token {
+  token: String
+}
+
+type UsuarioJWT {
+  id: Int!
+  nombre: String
+  apellido: String
+  email: String
+}
+
+type Producto {
+  id: Int!
+  createdAt: DateTime
+  updatedAt: DateTime
+  nombre: String!
+  existencia: Int
+  precio: Float!
+}
+
+type Cliente {
+  id: Int!
+  createdAt: DateTime
+  updatedAt: DateTime
+  nombre: String
+  apellido: String
+  empresa: String
+  email: String!
+  telefono: String
+  vendedor: Usuario
+}
+
+type Pedido {
+  id: Int!
+  createdAt: DateTime
+  updatedAt: DateTime
+  nombre: String
+  articulos: [ProductoAPedir]
+  total: Float
+  estado: Estado
+  cliente: Cliente
+  vendedor: Usuario
+}
+
+type ProductoAPedir {
+  id: Int!
+  cantidad: Int
+  pedidos: [Pedido]
+}
+
+type Query {
+  # Usuarios
+  obtenerUsuario(token: String!): UsuarioJWT
+  # Productos
+  obtenerProductos: [Producto]
+  obtenerProducto(id: Int!): Producto
+  # Clientes
+  obtenerClientes: [Cliente]
+  obtenerClientesVendedor: [Cliente]
+  obtenerCliente(id: Int!): Cliente
+}
+
+type Mutation {
+  # Usuarios
+  nuevoUsuario(data: UsuarioInput!): Usuario!
+  autenticarUsuario(data: AutenticarInput!): Token
+  # Productos
+  nuevoProducto(data: ProductoInput!): Producto
+  actualizarProducto(id: Int!, data: ProductoInput!): Producto
+  eliminarProducto(id: Int!): String
+  # Clientes
+  nuevoCliente(data: ClienteInput!): Cliente
+  actualizarCliente(id: Int!, data: ClienteInput!): Cliente
+  eliminarCliente(id: Int!): String
+  # Pedidos
+  nuevoPedido(data: PedidoInput!): Pedido
+}
+
+input UsuarioWhereInput {
+  name: String
+}
+
+input UsuarioInput {
+  nombre: String
+  apellido: String
+  email: String
+  password: String
+}
+
+input AutenticarInput {
+  email: String!
+  password: String!
+}
+
+input ProductoInput {
+  nombre: String!
+  existencia: Int!
+  precio: Float!
+}
+
+input ClienteInput {
+  nombre: String
+  apellido: String
+  empresa: String
+  email: String!
+  telefono: String
+}
+
+input ProductoAPedirInput {
+  id: Int!
+  cantidad: Int
+}
+
+input PedidoInput {
+  nombre: String
+  articulos: [ProductoAPedirInput]
+  total: Float!
+  clienteId: Int
+}
+
+enum Estado {
+  PENDIENTE
+  COMPLETADO
+  CANCELADO
+}

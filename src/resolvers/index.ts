@@ -2,6 +2,7 @@ import * as usuario from "./usuario.resolver";
 import * as producto from "./producto.resolver";
 import * as cliente from "./cliente.resolver";
 import * as pedido from "./pedido.resolver";
+import * as busquedaAvanzada from "./busqueda_avanzada.resolver";
 import * as scalars from "./scalars";
 
 export default {
@@ -21,6 +22,9 @@ export default {
     obtenerPedidosVendedor: pedido.obtenerPedidosVendedor,
     obtenerPedido: pedido.obtenerPedido,
     obtenerPedidosEstado: pedido.obtenerPedidosEstado,
+    // BusquedaAvanzada
+    mejoresClientes: busquedaAvanzada.mejoresClientes,
+    mejoresVendedores: busquedaAvanzada.mejoresVendedores,
   },
   Mutation: {
     // Usuarios

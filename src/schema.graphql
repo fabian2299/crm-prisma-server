@@ -40,12 +40,15 @@ type Cliente {
   id: Int!
   createdAt: DateTime
   updatedAt: DateTime
+
   nombre: String
   apellido: String
   empresa: String
   email: String!
   telefono: String
+
   vendedor: Usuario
+  pedidos: [Pedido]
 }
 
 type Pedido {
@@ -70,6 +73,20 @@ type ProductoAPedir {
   producto: Producto
 }
 
+type TopCliente {
+  clienteId: Int
+  _sum: Total
+}
+
+type TopVendedor {
+  vendedorId: Int
+  _sum: Total
+}
+
+type Total {
+  total: Int
+}
+
 type Query {
   # Usuarios
   obtenerUsuario(token: String!): UsuarioJWT
@@ -87,6 +104,7 @@ type Query {
   obtenerPedidosEstado(estado: Estado!): [Pedido]
   # Busquedas Avanzadas
   mejoresClientes: [TopCliente]
+  mejoresVendedores: [TopVendedor]
 }
 
 type Mutation {

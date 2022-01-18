@@ -18,7 +18,7 @@ export async function obtenerPedidosVendedor(
 ) {
   const pedidos = await orm.pedido.findMany({
     where: { vendedorId: user.id },
-    include: { articulos: true },
+    include: { articulos: true, cliente: true },
   });
   return pedidos;
 }
@@ -61,7 +61,7 @@ export async function nuevoPedido(
   { orm, user }: ResolverContext
 ) {
   // verificar si el cliente existe o no
-  const { nombre, total, clienteId, articulos } = data;
+  const { total, clienteId, articulos } = data;
 
   let cliente = await orm.cliente.findFirst({ where: { id: clienteId } });
   if (!cliente) throw new Error(`El cliente no existe`);
@@ -71,10 +71,10 @@ export async function nuevoPedido(
   }
   // revisar que el stock este disponible
   for await (const articulo of articulos) {
-    const { productoId } = articulo;
+    const { id } = articulo;
     // busca el producto
     let producto = await orm.producto.findUnique({
-      where: { id: productoId },
+      where: { id },
     });
     if (!producto) throw new Error(`Producto no encontrado`);
     // revisar si la cantidad no sobrepasa el stock
@@ -85,7 +85,7 @@ export async function nuevoPedido(
     } else {
       // Restar la cantidad a lo disponible
       producto = await orm.producto.update({
-        where: { id: productoId },
+        where: { id },
         data: {
           existencia: producto.existencia - articulo.cantidad,
         },
@@ -95,7 +95,6 @@ export async function nuevoPedido(
 
   const pedido = await orm.pedido.create({
     data: {
-      nombre,
       total,
       articulos: {
         create: [...articulos],
@@ -118,7 +117,7 @@ export async function actualizarPedido(
   { id, data }: { id: number; data: any },
   { orm, user }: ResolverContext
 ) {
-  const { clienteId, articulos, estado } = data;
+  const { clienteId, estado } = data;
 
   // verificar si el pedido existe
   let pedido = await orm.pedido.findFirst({ where: { id } });
@@ -133,46 +132,14 @@ export async function actualizarPedido(
     throw new Error(`No tienes las crendeciales`);
   }
 
-  // revisar el stock
-  for await (const articulo of articulos) {
-    const { productoId } = articulo;
+  pedido = await orm.pedido.update({
+    where: { id },
+    data: {
+      estado,
+    },
+  });
 
-    // busca el producto
-    let producto = await orm.producto.findUnique({
-      where: { id: productoId },
-    });
-    if (!producto) throw new Error(`Producto no encontrado`);
-    // revisar si la cantidad no sobrepasa el stock
-    if (articulo.cantidad > producto?.existencia!) {
-      throw new Error(
-        `El articulo: ${producto?.nombre}, excede la cantidad disponible`
-      );
-    } else {
-      // Restar la cantidad a lo disponible
-      producto = await orm.producto.update({
-        where: { id: productoId },
-        data: {
-          existencia: producto.existencia - articulo.cantidad,
-        },
-      });
-    }
-    pedido = await orm.pedido.update({
-      where: { id },
-      data: {
-        estado,
-        articulos: {
-          update: [
-            {
-              data: { cantidad: articulo.cantidad },
-              where: { id: articulo.id },
-            },
-          ],
-        },
-      },
-    });
-
-    return pedido;
-  }
+  return pedido;
 }
 
 export async function eliminarPedido(
@@ -199,5 +166,5 @@ export async function eliminarPedido(
 
   pedido = await orm.pedido.delete({ where: { id } });
 
-  return `Pedido con nombre ${pedido.nombre} ha sido eliminado`;
+  return `El Pedido ha sido eliminado`;
 }

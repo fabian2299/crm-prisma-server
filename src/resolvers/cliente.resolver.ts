@@ -59,7 +59,13 @@ export async function nuevoCliente(
 ) {
   const { nombre, apellido, empresa, email, telefono } = data;
 
-  const cliente = await orm.cliente.create({
+  let cliente = await orm.cliente.findFirst({
+    where: { email },
+  });
+
+  if (cliente) throw new Error(`El cliente ya existe`);
+
+  cliente = await orm.cliente.create({
     data: {
       nombre,
       apellido,

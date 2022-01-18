@@ -24,12 +24,14 @@ export default async function start() {
 
       if (token) {
         try {
-          user = await jwt.verify(token, process.env.SECRETA!);
+          user = await jwt.verify(
+            token.replace("Bearer ", ""),
+            process.env.SECRETA!
+          );
         } catch (error) {
           console.log(error);
         }
       }
-
       return {
         orm,
         user,

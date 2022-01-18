@@ -12,12 +12,10 @@ export type ResolverContext = {
 // QUERYS
 export async function obtenerUsuario(
   parent: ResolverParent,
-  args: { token: string },
-  { orm }: ResolverContext
+  args: unknown,
+  { orm, user }: ResolverContext
 ) {
-  const usuarioId = jwt.verify(args.token, process.env.SECRETA!);
-
-  return usuarioId as Pick<Usuario, "id" | "email" | "nombre" | "apellido">;
+  return user;
 }
 
 //  MUTATIONS
@@ -32,7 +30,12 @@ export async function nuevoUsuario(
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  const usuario = await orm.usuario.create({
+  let usuario = await orm.usuario.findUnique({
+    where: { email },
+  });
+  if (usuario) throw new Error(`El usuario ya existe bro..`);
+
+  usuario = await orm.usuario.create({
     data: {
       nombre,
       apellido,

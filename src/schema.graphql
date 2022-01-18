@@ -32,8 +32,6 @@ type Producto {
   nombre: String!
   existencia: Int
   precio: Float!
-
-  productoAPedir: [ProductoAPedir]
 }
 
 type Cliente {
@@ -56,7 +54,6 @@ type Pedido {
   createdAt: DateTime
   updatedAt: DateTime
 
-  nombre: String
   total: Float
   estado: Estado
 
@@ -70,7 +67,8 @@ type ProductoAPedir {
   id: Int!
   cantidad: Int
   pedido: Pedido
-  producto: Producto
+  nombre: String
+  precio: Float
 }
 
 type TopCliente {
@@ -89,7 +87,7 @@ type Total {
 
 type Query {
   # Usuarios
-  obtenerUsuario(token: String!): UsuarioJWT
+  obtenerUsuario: UsuarioJWT
   # Productos
   obtenerProductos: [Producto]
   obtenerProducto(id: Int!): Producto
@@ -160,7 +158,8 @@ input ProductoAPedirInput {
   id: Int
   cantidad: Int
   pedidoId: Int
-  productoId: Int
+  nombre: String
+  precio: Float
 }
 
 input PedidoInput {

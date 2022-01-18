@@ -33,7 +33,7 @@ model Cliente {
   email         String      @unique
   telefono      String?
 
-  vendedor      Usuario     @relation(fields: [vendedorId], references: [id])
+  vendedor      Usuario     @relation(fields: [vendedorId], references: [id] ,onDelete:Cascade)
   vendedorId    Int
 
   pedidos       Pedido[]
@@ -48,8 +48,6 @@ model Producto {
   existencia          Int
   precio              Float
 
-  productoAPedir      ProductoAPedir[]
-
   @@fulltext([nombre])
 }
 
@@ -58,13 +56,12 @@ model Pedido {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
-  nombre        String
   total         Float
   estado        Estado      @default(PENDIENTE)
 
-  cliente       Cliente     @relation(fields: [clienteId], references: [id])
+  cliente       Cliente     @relation(fields: [clienteId], references: [id],onDelete:Cascade)
   clienteId     Int
-  vendedor      Usuario     @relation(fields: [vendedorId], references: [id])
+  vendedor      Usuario     @relation(fields: [vendedorId], references: [id],onDelete:Cascade)
   vendedorId    Int
 
   articulos     ProductoAPedir[]
@@ -74,12 +71,11 @@ model Pedido {
 model ProductoAPedir {
   id            Int        @id @default(autoincrement())
   cantidad      Int
+  nombre        String
+  precio        Float
 
-  pedido        Pedido?     @relation(fields: [pedidoId], references: [id])
+  pedido        Pedido?     @relation(fields: [pedidoId], references: [id],onDelete:Cascade)
   pedidoId      Int?        
-
-  producto      Producto?     @relation(fields: [productoId], references: [id])
-  productoId    Int?
 }
 
 enum Estado {

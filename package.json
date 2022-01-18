@@ -6,9 +6,9 @@
   "license": "MIT",
   "scripts": {
     "build": "prisma generate && yarn clean && tsc --build ",
-    "start": "node ../dist/api",
+    "start": "node ./dist/api",
     "dev": "nodemon index.ts",
-    "clean": "rimraf ../dist/api"
+    "clean": "rimraf ./dist/api"
   },
   "dependencies": {
     "@prisma/client": "3.8.1",
